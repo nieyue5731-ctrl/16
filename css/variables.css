@@ -1,0 +1,41 @@
+/* ═══════════════════ CSS Variables (Unified :root) ═══════════════════ */
+:root {
+    /* Brand Colors */
+    --primary: #6c5ce7;
+    --secondary: #a29bfe;
+    --accent: #fd79a8;
+    --gold: #ffeaa7;
+
+    /* Status Bars */
+    --health: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 50%, #d63031 100%);
+    --mana: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #6c5ce7 100%);
+
+    /* Glass Morphism Tokens */
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-bg: var(--glass);
+    --glass-bd: var(--glass-border);
+    --glass-blur: 10px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glow: 0 0 20px rgba(108, 92, 231, 0.5);
+    --glow-shadow: var(--glow);
+
+    /* Unified HUD Tokens */
+    --hud-bg: rgba(15, 18, 40, 0.62);
+    --hud-border: rgba(255, 255, 255, 0.18);
+    --hud-blur: 12px;
+    --hud-radius: 14px;
+    --hud-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+        0 0 18px rgba(108, 92, 231, 0.25);
+
+    /* Gold/Purple Gradient */
+    --gold-grad: linear-gradient(135deg, var(--gold) 0%, var(--accent) 50%, var(--secondary) 100%);
+
+    /* Mobile Controls */
+    --joy-size: 140px;
+    --joy-pad: 35px;
+    --btn-size: 70px;
+    --ui-accent: rgba(162, 155, 254, 0.9);
+}
