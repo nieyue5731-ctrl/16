@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Terraria Ultra - Aesthetic Edition - A beautiful 2D sandbox game">
+    <title>Terraria Ultra - Aesthetic Edition</title>
+
+    <!-- ═══════════════════ CSS (Phase 2: Consolidated) ═══════════════════ -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/hud.css">
+    <link rel="stylesheet" href="css/minimap.css">
+    <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/overlays.css">
+    <link rel="stylesheet" href="css/effects.css">
+    <link rel="stylesheet" href="css/crafting.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/performance.css">
+</head>
+
+<body>
+    <!-- ═══════════════════ Game Canvas ═══════════════════ -->
+    <canvas id="game"></canvas>
+
+    <!-- Ambient Particles -->
+    <div id="ambient-particles"></div>
+
+    <!-- Loading Screen -->
+    <div id="loading" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div class="loading-particles"></div>
+        <div class="loading-content">
+            <h1>TERRARIA ULTRA</h1>
+            <p class="subtitle">Aesthetic Edition</p>
+            <div class="progress">
+                <div class="progress-fill" id="load-progress"></div>
+            </div>
+            <div class="status" id="load-status" aria-live="polite">Initializing...</div>
+        </div>
+    </div>
+
+    <!-- Rotate Hint (Mobile) -->
+    <div id="rotate-hint">
+        <div class="icon">📱</div>
+        <p>请横屏游玩以获得最佳体验</p>
+    </div>
+
+    <!-- Crafting Overlay -->
+    <div id="crafting-overlay">
+        <div id="crafting-panel">
+            <div class="close-btn" id="craft-close">✕</div>
+            <div class="craft-list-container">
+                <div class="craft-header"><span>🔨 制造</span></div>
+                <div class="craft-grid" id="craft-grid"></div>
+            </div>
+            <div class="craft-details">
+                <div class="preview-box" id="craft-preview"></div>
+                <div class="item-title" id="craft-title">选择物品</div>
+                <div class="item-desc" id="craft-desc">点击左侧列表查看配方</div>
+                <div class="ingredients-list" id="craft-ingredients"></div>
+                <button class="craft-btn" disabled id="craft-action-btn">制造</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Overlay -->
+    <div aria-hidden="true" id="inventory-overlay">
+        <div aria-label="背包" id="inventory-panel" role="dialog">
+            <div class="inv-close-btn" id="inv-close" title="关闭 (Esc)">✕</div>
+            <div class="inv-left">
+                <div class="inv-topbar">
+                    <div class="inv-title">🎒 背包</div>
+                    <div class="inv-capacity">
+                        <span class="inv-capacity-text" id="inv-capacity-text">0/36</span>
+                        <div class="inv-capacity-bar"><div class="fill" id="inv-capacity-fill"></div></div>
+                    </div>
+                </div>
+                <div class="inv-section">
+                    <div class="inv-section-label">快捷栏 <span style="opacity:.6">(1-9)</span></div>
+                    <div class="inv-grid" id="inv-hotbar-grid"></div>
+                </div>
+                <div class="inv-section">
+                    <div class="inv-section-label">背包</div>
+                    <div class="inv-grid" id="inv-backpack-grid"></div>
+                </div>
+            </div>
+            <div class="inv-right">
+                <div class="inv-preview-box" id="inv-preview"></div>
+                <div class="inv-item-name" id="inv-item-name">未选择</div>
+                <div class="inv-item-meta" id="inv-item-meta"></div>
+                <div class="inv-item-desc" id="inv-item-desc">点击格子查看，或拖拽/点击交换。</div>
+                <div class="inv-action-row">
+                    <button class="inv-btn primary" id="inv-sort">🧹 整理</button>
+                    <button class="inv-btn" id="inv-to-hotbar">↔ 放入快捷栏</button>
+                    <button class="inv-btn" id="inv-put-back">↩ 放回</button>
+                    <button class="inv-btn danger" id="inv-drop">🗑 丢弃</button>
+                </div>
+                <div class="inv-hints">
+                    <div><kbd>左键</kbd> 拿起/放下 <kbd>右键</kbd> 拆分/放 1 个</div>
+                    <div><kbd>Shift</kbd>+<kbd>点击</kbd> 快速移动 <kbd>B</kbd>/<kbd>I</kbd> 打开背包 <kbd>Esc</kbd> 关闭</div>
+                </div>
+            </div>
+        </div>
+        <div aria-hidden="true" id="inv-held"></div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div aria-hidden="true" class="ux-overlay" id="pause-overlay">
+        <div class="ux-panel">
+            <div class="ux-title">
+                <h2>⏸ 已暂停</h2>
+                <button aria-label="关闭" class="ux-close" id="pause-close">✕</button>
+            </div>
+            <div class="ux-grid">
+                <div class="ux-row">
+                    <label><b>提示</b><small>暂停时游戏不会更新；你仍可查看界面并调整设置。</small></label>
+                    <span></span>
+                </div>
+            </div>
+            <div class="ux-actions">
+                <button class="ux-action" id="pause-newworld">🧹 新世界</button>
+                <button class="ux-action" id="pause-save">💾 保存</button>
+                <button class="ux-action" id="pause-fullscreen">🖥 全屏</button>
+                <button class="ux-action primary" id="pause-resume">▶ 继续</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div aria-hidden="true" class="ux-overlay" id="settings-overlay">
+        <div class="ux-panel">
+            <div class="ux-title">
+                <h2>⚙️ 设置</h2>
+                <button aria-label="关闭" class="ux-close" id="settings-close">✕</button>
+            </div>
+            <div class="ux-grid">
+                <div class="ux-row">
+                    <label>画质 / 分辨率倍率<small>降低可显著提升低端设备帧率。</small></label>
+                    <select id="opt-dpr">
+                        <option value="1">省电 (1x)</option>
+                        <option value="1.5">均衡 (1.5x)</option>
+                        <option value="2">高清 (2x)</option>
+                    </select>
+                </div>
+                <div class="ux-row">
+                    <label>粒子效果<small>关闭可减少卡顿与发热。</small></label>
+                    <select id="opt-particles"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>环境特效<small>关闭可减少 DOM 动画压力。</small></label>
+                    <select id="opt-ambient"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>背景墙山脉<span class="ux-tip">关闭可减少背景渲染</span></label>
+                    <select id="opt-bgmountains"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>后期画面增强<small>提升氛围；低端设备可选关闭。</small></label>
+                    <select id="opt-postfx"><option value="2">极致</option><option value="1">轻量</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>小地图<small>不需要时可关闭提升性能。</small></label>
+                    <select id="opt-minimap"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>触控辅助瞄准<small>移动端更容易选中方块。</small></label>
+                    <select id="opt-aimassist"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>震动反馈<small>挖掘/放置时轻微震动。</small></label>
+                    <select id="opt-vibration"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>自动性能调节<small>帧率降低时自动降低特效。</small></label>
+                    <select id="opt-autoquality"><option value="1">开启</option><option value="0">关闭</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>显示 FPS<small>调试用。</small></label>
+                    <select id="opt-showfps"><option value="0">关闭</option><option value="1">开启</option></select>
+                </div>
+                <div class="ux-row">
+                    <label>镜头平滑 <span class="ux-val" id="val-camsmooth"></span><small>越大越顺滑。</small></label>
+                    <input id="opt-camsmooth" max="18" min="3" step="1" type="range">
+                </div>
+                <div class="ux-row">
+                    <label>镜头前瞻 <span class="ux-val" id="val-lookahead"></span><small>0=无前瞻。</small></label>
+                    <input id="opt-lookahead" max="15" min="0" step="1" type="range">
+                </div>
+            </div>
+            <div class="ux-actions">
+                <button class="ux-action primary" id="settings-save">💾 保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD Layer -->
+    <div id="ui">
+        <div id="stats">
+            <div class="stat-bar">
+                <span class="icon">❤️</span>
+                <div class="bar"><div class="fill" id="health-fill" style="width:100%"><span class="value" id="health-value">100</span></div></div>
+            </div>
+            <div class="stat-bar">
+                <span class="icon">💎</span>
+                <div class="bar"><div class="fill" id="mana-fill" style="width:100%"><span class="value" id="mana-value">100</span></div></div>
+            </div>
+        </div>
+        <div id="hotbar"></div>
+        <div class="item-hint" id="item-hint"></div>
+        <div id="minimap"><canvas></canvas></div>
+        <div id="time-display"><span id="time-icon">☀️</span> <span id="time-text">12:00</span></div>
+        <div id="info"></div>
+        <div id="fps"></div>
+    </div>
+
+    <!-- Top Buttons -->
+    <div id="top-buttons">
+        <button class="top-btn" id="btn-pause" title="暂停">⏸</button>
+        <button class="top-btn" id="btn-settings" title="设置">⚙️</button>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div class="joystick-container" id="joystick">
+            <div class="joystick-base"></div>
+            <div class="joystick-thumb" id="joystick-thumb"></div>
+        </div>
+        <div class="jump-container">
+            <button class="action-btn jump" id="btn-jump">⬆</button>
+        </div>
+        <div class="action-buttons">
+            <div class="action-row">
+                <button class="action-btn mine" id="btn-mine">⛏</button>
+                <button class="action-btn place" id="btn-place">🧱</button>
+            </div>
+        </div>
+    </div>
+    <div id="crosshair"></div>
+
+    <!-- Mining Progress Bar -->
+    <div id="mining-bar">
+        <div class="mb-top">
+            <canvas class="mb-icon"></canvas>
+            <span class="mb-name"></span>
+            <span class="mb-percent">0%</span>
+        </div>
+        <div class="mb-track"><div class="fill"></div></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- ═══════════════════ JavaScript (Phase 1-8: Organized) ═══════════════════ -->
+    <!-- Load order matters: infrastructure -> data -> systems -> entities -> engine -> UI -> patches -> boot -->
+
+    <!-- Core Infrastructure -->
+    <script src="js/core/constants.js"></script>
+    <script src="js/core/defensive.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/core/block-data.js"></script>
+
+    <!-- Performance Infrastructure -->
+    <script src="js/performance/object-pool.js"></script>
+    <script src="js/performance/particle-pool.js"></script>
+
+    <!-- Systems -->
+    <script src="js/systems/settings.js"></script>
+    <script src="js/systems/fullscreen.js"></script>
+    <script src="js/systems/audio.js"></script>
+    <script src="js/systems/quality.js"></script>
+
+    <!-- UI -->
+    <script src="js/ui/toast.js"></script>
+    <script src="js/ui/ux-overlays.js"></script>
+
+    <!-- Engine -->
+    <script src="js/engine/world-generator.js"></script>
+    <script src="js/engine/renderer.js"></script>
+
+    <!-- Entities -->
+    <script src="js/entities/particle-system.js"></script>
+    <script src="js/entities/dropped-items.js"></script>
+    <script src="js/entities/ambient-particles.js"></script>
+    <script src="js/entities/player.js"></script>
+
+    <!-- UI (depends on entities) -->
+    <script src="js/ui/crafting-ui.js"></script>
+    <script src="js/ui/minimap.js"></script>
+    <script src="js/ui/inventory-ui.js"></script>
+
+    <!-- Input -->
+    <script src="js/input/touch-controller.js"></script>
+    <script src="js/input/input-manager.js"></script>
+
+    <!-- Game Core -->
+    <script src="js/engine/game.js"></script>
+
+    <!-- Patch layers (merged into systems) -->
+    <script src="js/systems/patches-merged.js"></script>
+    <script src="js/systems/tile-logic-engine.js"></script>
+
+    <!-- Boot -->
+    <script src="js/boot/boot.js"></script>
+    <script src="js/boot/final-patches.js"></script>
+</body>
+</html>
